@@ -1,0 +1,21 @@
+{
+  "name": "study-jarvis",
+  "version": "1.0.0",
+  "description": "AI-powered study assistant with RAG capabilities",
+  "scripts": {
+    "setup": "cd backend && python -m venv venv && .\\venv\\Scripts\\activate && pip install -r requirements.txt",
+    "start": "cd backend && uvicorn app:app --reload",
+    "ingest": "cd backend && python ingest_notes.py"
+  },
+  "keywords": [
+    "ai",
+    "rag",
+    "study-assistant",
+    "llm",
+    "ollama",
+    "pinecone",
+    "education"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}

@@ -1,0 +1,123 @@
+# Sample Study Notes - Data Structures
+
+## Chapter 1: Introduction to Data Structures
+
+### What are Data Structures?
+
+Data structures are specialized formats for organizing, processing, retrieving, and storing data. They enable efficient access and modification of data.
+
+### Types of Data Structures
+
+1. **Linear Data Structures**
+   - Arrays
+   - Linked Lists
+   - Stacks
+   - Queues
+
+2. **Non-Linear Data Structures**
+   - Trees
+   - Graphs
+   - Hash Tables
+
+### Arrays
+
+An array is a collection of elements stored at contiguous memory locations. Arrays have:
+- Fixed size
+- O(1) access time
+- O(n) insertion/deletion time
+
+### Linked Lists
+
+A linked list is a linear data structure where elements are stored in nodes. Each node contains:
+- Data
+- Pointer to the next node
+
+Advantages over arrays:
+- Dynamic size
+- Efficient insertion and deletion
+
+### Stacks
+
+A stack follows the Last In First Out (LIFO) principle. Operations:
+- Push: Add element to top
+- Pop: Remove element from top
+- Peek: View top element
+
+Applications: Function call stack, undo mechanism, expression evaluation
+
+### Queues
+
+A queue follows the First In First Out (FIFO) principle. Operations:
+- Enqueue: Add element to rear
+- Dequeue: Remove element from front
+
+Applications: Task scheduling, breadth-first search, printer queue
+
+## Chapter 2: Sorting Algorithms
+
+### Bubble Sort
+
+Bubble sort repeatedly steps through the list, compares adjacent elements, and swaps them if they're in the wrong order.
+
+Time Complexity: O(n²)
+Space Complexity: O(1)
+
+### Merge Sort
+
+Merge sort is a divide-and-conquer algorithm that:
+1. Divides array into two halves
+2. Recursively sorts each half
+3. Merges the sorted halves
+
+Time Complexity: O(n log n)
+Space Complexity: O(n)
+
+### Quick Sort
+
+Quick sort uses a pivot element to partition the array. Elements smaller than pivot go left, larger go right.
+
+Time Complexity:
+- Average: O(n log n)
+- Worst: O(n²)
+
+Space Complexity: O(log n)
+
+### Comparison
+
+- Merge Sort: Stable, guaranteed O(n log n), requires extra space
+- Quick Sort: In-place, faster in practice, worst case O(n²)
+- Bubble Sort: Simple but inefficient for large datasets
+
+## Chapter 3: Trees
+
+### Binary Trees
+
+A tree where each node has at most two children: left and right.
+
+### Binary Search Trees (BST)
+
+A binary tree where:
+- Left subtree contains nodes with keys less than parent
+- Right subtree contains nodes with keys greater than parent
+
+Operations (average case):
+- Search: O(log n)
+- Insert: O(log n)
+- Delete: O(log n)
+
+### Tree Traversals
+
+1. **Inorder** (Left, Root, Right): Gives sorted output for BST
+2. **Preorder** (Root, Left, Right): Used for creating copy of tree
+3. **Postorder** (Left, Right, Root): Used for deleting tree
+
+### Balanced Trees
+
+AVL trees and Red-Black trees maintain balance to ensure O(log n) operations even in worst case.
+
+## Key Takeaways
+
+1. Choose the right data structure for your use case
+2. Consider time and space complexity trade-offs
+3. Understand when to use linear vs non-linear structures
+4. Practice implementing algorithms to understand them better
