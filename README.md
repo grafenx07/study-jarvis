@@ -2,6 +2,11 @@
 
 An AI-powered study assistant that uses self-hosted LLMs (LLaMA 3/Mistral via Ollama) and vector databases (Pinecone) to help you learn from your notes effectively.
 
+## 📸 Screenshots
+
+![Study Jarvis Interface](screenshots/main-interface.png)
+*Auto-generate summaries, quizzes, and flashcards with one click. Track your chat history and manage documents easily.*
+
 ## 🌟 Features
 
 - **📚 Note Management**: Upload PDF, DOCX, or TXT files
@@ -11,6 +16,8 @@ An AI-powered study assistant that uses self-hosted LLMs (LLaMA 3/Mistral via Ol
 - **🎴 Flashcards**: Generate study flashcards
 - **🔍 Semantic Search**: Find relevant information using vector embeddings
 - **🏠 Self-Hosted**: Complete privacy with local LLM
+- **💾 Chat History**: Save and restore previous conversations
+- **⚡ One-Click Generation**: Auto-generate content when switching study modes
 
 ## 🏗️ Architecture
 
