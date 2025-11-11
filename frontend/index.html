@@ -249,6 +249,121 @@
             min-width: 0;
         }
 
+        /* Recent Chats Section */
+        .recent-chats-section {
+            margin-top: 20px;
+        }
+
+        .recent-chats-list {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 10px;
+            border: 1px solid var(--border);
+            max-height: 250px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+
+        .recent-chats-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .recent-chats-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .recent-chats-list::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        .chat-history-item {
+            padding: 10px;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .chat-history-item:hover {
+            background: var(--hover);
+            border-color: var(--accent);
+        }
+
+        .chat-history-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .chat-preview {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .chat-preview-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .chat-preview-text {
+            font-size: 11px;
+            color: var(--text-secondary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .chat-preview-time {
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .chat-delete-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 4px;
+            font-size: 14px;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .chat-delete-btn:hover {
+            color: #ef4444;
+        }
+
+        .new-chat-btn {
+            width: 100%;
+            padding: 10px;
+            background: var(--accent);
+            color: var(--bg-primary);
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 15px;
+        }
+
+        .new-chat-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
         .document-name {
             font-size: 13px;
             font-weight: 500;
@@ -690,6 +805,26 @@
                 </div>
             </div>
 
+            <!-- Recent Chats Section -->
+            <div class="recent-chats-section">
+                <button class="new-chat-btn" onclick="startNewChat()">
+                    ✨ New Chat
+                </button>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); margin: 0; font-weight: 600;">
+                        Recent Chats (<span id="chatCount">0</span>)
+                    </h3>
+                    <button onclick="clearAllChats()" style="background: transparent; border: 1px solid var(--border); color: var(--text-secondary); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; transition: all 0.2s;" onmouseover="this.style.borderColor='#ef4444'; this.style.color='#ef4444'" onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--text-secondary)'" title="Clear all chat history">
+                        🗑️ Clear
+                    </button>
+                </div>
+                <div id="recentChatsList" class="recent-chats-list">
+                    <div style="text-align: center; color: var(--text-secondary); font-size: 12px; padding: 20px;">
+                        No chat history yet
+                    </div>
+                </div>
+            </div>
+
             <div class="upload-section">
                 <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); margin-bottom: 15px; font-weight: 600;">Upload Notes</h3>
                 <div class="file-input-wrapper">
@@ -780,6 +915,188 @@
     <script>
         let currentMode = 'answer';
         let isLoading = false;
+        let currentChatId = null;
+        let chatHistory = [];
+
+        // Load chat history from localStorage
+        function loadChatHistory() {
+            const saved = localStorage.getItem('studyJarvisChatHistory');
+            if (saved) {
+                chatHistory = JSON.parse(saved);
+            }
+            renderChatHistory();
+        }
+
+        // Save chat history to localStorage
+        function saveChatHistory() {
+            localStorage.setItem('studyJarvisChatHistory', JSON.stringify(chatHistory));
+            renderChatHistory();
+        }
+
+        // Create new chat
+        function startNewChat() {
+            currentChatId = Date.now().toString();
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = '';
+
+            // Show welcome screen
+            const welcomeScreen = document.createElement('div');
+            welcomeScreen.className = 'welcome-screen';
+            welcomeScreen.id = 'welcomeScreen';
+            welcomeScreen.innerHTML = `
+                <h2>Welcome to Study Jarvis</h2>
+                <p>Your AI-powered study companion. Upload your notes and start asking questions, or try one of these quick actions:</p>
+                <div class="quick-actions">
+                    <div class="quick-action-btn" onclick="setQuickMessage('Explain the main concepts')">
+                        <h4>📚 Explain Concepts</h4>
+                        <p>Get clear explanations</p>
+                    </div>
+                    <div class="quick-action-btn" onclick="setQuickMessage('Summarize my notes')">
+                        <h4>📝 Summarize</h4>
+                        <p>Quick overviews</p>
+                    </div>
+                    <div class="quick-action-btn" onclick="setQuickMessage('Create a quiz on this topic')">
+                        <h4>❓ Quiz Me</h4>
+                        <p>Test your knowledge</p>
+                    </div>
+                    <div class="quick-action-btn" onclick="setQuickMessage('Make flashcards')">
+                        <h4>🎴 Flashcards</h4>
+                        <p>Study cards</p>
+                    </div>
+                </div>
+            `;
+            chatMessages.appendChild(welcomeScreen);
+        }
+
+        // Save current chat
+        function saveCurrentChat(userMessage, aiResponse) {
+            if (!currentChatId) {
+                currentChatId = Date.now().toString();
+            }
+
+            const existingChat = chatHistory.find(chat => chat.id === currentChatId);
+
+            if (existingChat) {
+                existingChat.messages.push(
+                    { role: 'user', content: userMessage, timestamp: new Date().toISOString() },
+                    { role: 'assistant', content: aiResponse, timestamp: new Date().toISOString() }
+                );
+                existingChat.lastUpdated = new Date().toISOString();
+                existingChat.preview = userMessage.substring(0, 50);
+            } else {
+                chatHistory.unshift({
+                    id: currentChatId,
+                    title: userMessage.substring(0, 30) + (userMessage.length > 30 ? '...' : ''),
+                    preview: userMessage.substring(0, 50),
+                    messages: [
+                        { role: 'user', content: userMessage, timestamp: new Date().toISOString() },
+                        { role: 'assistant', content: aiResponse, timestamp: new Date().toISOString() }
+                    ],
+                    created: new Date().toISOString(),
+                    lastUpdated: new Date().toISOString(),
+                    mode: currentMode
+                });
+            }
+
+            // Keep only last 20 chats
+            if (chatHistory.length > 20) {
+                chatHistory = chatHistory.slice(0, 20);
+            }
+
+            saveChatHistory();
+        }
+
+        // Load a chat from history
+        function loadChat(chatId) {
+            const chat = chatHistory.find(c => c.id === chatId);
+            if (!chat) return;
+
+            currentChatId = chatId;
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = '';
+
+            // Load all messages
+            chat.messages.forEach(msg => {
+                if (msg.role === 'user') {
+                    addMessage(msg.content, 'user');
+                } else {
+                    addMessage(msg.content, 'ai');
+                }
+            });
+
+            // Scroll to bottom
+            scrollToBottom(false);
+        }
+
+        // Delete a chat
+        function deleteChat(chatId, event) {
+            event.stopPropagation();
+            if (confirm('Delete this chat?')) {
+                chatHistory = chatHistory.filter(c => c.id !== chatId);
+                saveChatHistory();
+
+                // If deleting current chat, start new one
+                if (currentChatId === chatId) {
+                    startNewChat();
+                }
+            }
+        }
+
+        // Clear all chats
+        function clearAllChats() {
+            if (confirm('Are you sure you want to delete all chat history? This cannot be undone.')) {
+                chatHistory = [];
+                saveChatHistory();
+                startNewChat();
+            }
+        }
+
+        // Render chat history list
+        function renderChatHistory() {
+            const list = document.getElementById('recentChatsList');
+            const count = document.getElementById('chatCount');
+
+            count.textContent = chatHistory.length;
+
+            if (chatHistory.length === 0) {
+                list.innerHTML = `
+                    <div style="text-align: center; color: var(--text-secondary); font-size: 12px; padding: 20px;">
+                        No chat history yet
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = chatHistory.map(chat => {
+                const date = new Date(chat.lastUpdated);
+                const timeAgo = getTimeAgo(date);
+
+                return `
+                    <div class="chat-history-item" onclick="loadChat('${chat.id}')" title="${chat.title}">
+                        <div class="chat-preview">
+                            <div class="chat-preview-title">${escapeHtml(chat.title)}</div>
+                            <div class="chat-preview-text">${escapeHtml(chat.preview)}</div>
+                            <div class="chat-preview-time">${timeAgo}</div>
+                        </div>
+                        <button class="chat-delete-btn" onclick="deleteChat('${chat.id}', event)" title="Delete chat">
+                            ✕
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Get relative time string
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+
+            if (seconds < 60) return 'Just now';
+            if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+            if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+
+            return date.toLocaleDateString();
+        }
 
         // Mode titles and descriptions
         const modeInfo = {
@@ -805,8 +1122,10 @@
         document.addEventListener('DOMContentLoaded', () => {
             checkSystemStatus();
             loadDocuments();
+            loadChatHistory();
             setupEventListeners();
             autoResizeTextarea();
+            startNewChat();
         });
 
         // Auto-scroll helper function
@@ -1109,6 +1428,9 @@
                     console.log('Adding AI message, answer length:', answer.length);
                     // Pass an object so addMessage can render sources nicely
                     addMessage({ answer, sources }, 'ai');
+
+                    // Save chat to history
+                    saveCurrentChat(message, answer);
                 } else {
                     console.error('Response not OK:', data);
                     addMessage('Sorry, I encountered an error. Please try again.', 'ai');
