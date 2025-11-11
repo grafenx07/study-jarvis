@@ -407,32 +407,6 @@
             color: white;
         }
 
-        .status-section {
-            padding: 15px;
-            background: var(--bg-tertiary);
-            border-radius: 8px;
-            margin-top: 15px;
-        }
-
-        .status-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-            font-size: 12px;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 6px;
-        }
-
-        .status-online { background: #22c55e; }
-        .status-offline { background: #ef4444; }
-
         /* Main Chat Area */
         .chat-area {
             display: flex;
@@ -850,17 +824,6 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="status-section">
-                    <div class="status-item">
-                        <span>AI Model</span>
-                        <span><span class="status-dot status-online" id="llmStatus"></span>Online</span>
-                    </div>
-                    <div class="status-item">
-                        <span>Vector DB</span>
-                        <span><span class="status-dot status-online" id="dbStatus"></span>Online</span>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -1120,7 +1083,6 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            checkSystemStatus();
             loadDocuments();
             loadChatHistory();
             setupEventListeners();
@@ -1152,6 +1114,9 @@
                     btn.classList.add('active');
                     currentMode = btn.dataset.mode;
                     updateModeInfo();
+
+                    // Auto-generate content based on mode
+                    autoGenerateForMode(currentMode);
                 });
             });
 
@@ -1237,6 +1202,78 @@
             document.getElementById('modeDescription').textContent = info.description;
         }
 
+        // Auto-generate content based on mode
+        async function autoGenerateForMode(mode) {
+            // Skip auto-generation for answer mode (it's interactive)
+            if (mode === 'answer') {
+                return;
+            }
+
+            // Hide welcome screen if visible
+            const welcomeScreen = document.getElementById('welcomeScreen');
+            if (welcomeScreen) {
+                welcomeScreen.style.display = 'none';
+            }
+
+            // Prepare the auto-generation message based on mode
+            let autoMessage = '';
+            switch (mode) {
+                case 'summarize':
+                    autoMessage = 'Summarize all my notes and provide the key points and main concepts';
+                    break;
+                case 'quiz':
+                    autoMessage = 'Generate a comprehensive quiz with 10 questions based on my study materials. Include multiple choice and short answer questions.';
+                    break;
+                case 'flashcard':
+                    autoMessage = 'Create 15 flashcards from my notes covering the most important concepts, definitions, and key facts';
+                    break;
+                default:
+                    return;
+            }
+
+            // Add the auto-generated user message
+            addMessage(autoMessage, 'user');
+
+            // Show typing indicator
+            showTypingIndicator();
+            isLoading = true;
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: autoMessage,
+                        mode: mode,
+                        top_k: 10
+                    })
+                });
+
+                const data = await response.json();
+                removeTypingIndicator();
+
+                if (response.ok) {
+                    const answer = data.answer || data.response || 'No response received';
+                    const sources = data.sources || [];
+                    addMessage({ answer, sources }, 'ai');
+
+                    // Save chat to history
+                    saveCurrentChat(autoMessage, answer);
+                } else {
+                    console.error('Response not OK:', data);
+                    addMessage('Sorry, I encountered an error. Please try again.', 'ai');
+                }
+            } catch (error) {
+                console.error('Auto-generate error:', error);
+                removeTypingIndicator();
+                addMessage('Connection error. Please check if the backend is running.', 'ai');
+            } finally {
+                isLoading = false;
+            }
+        }
+
         // Auto-resize textarea
         function autoResizeTextarea() {
             const textarea = document.getElementById('chatInput');
@@ -1245,21 +1282,6 @@
         }
 
         // Check system status
-        async function checkSystemStatus() {
-            try {
-                const response = await fetch('http://127.0.0.1:8000/status');
-                const data = await response.json();
-
-                document.getElementById('llmStatus').className =
-                    'status-dot ' + (data.llm_status === 'online' ? 'status-online' : 'status-offline');
-                document.getElementById('dbStatus').className =
-                    'status-dot ' + (data.pinecone_status === 'connected' ? 'status-online' : 'status-offline');
-            } catch (error) {
-                console.error('Status check failed:', error);
-                showNotification('Backend connection failed', 'error');
-            }
-        }
-
         // Load documents list
         async function loadDocuments() {
             try {
@@ -1549,9 +1571,6 @@
                 setTimeout(() => notification.remove(), 300);
             }, 3000);
         }
-
-        // Periodic status check
-        setInterval(checkSystemStatus, 30000);
     </script>
 </body>
 </html>
